@@ -1,0 +1,66 @@
+doctype html
+//- basic libraries: jquery(1.10.2), d3js(3.5.4), angularjs(1.2.3), bootstrap(3.0)/semantic-ui(0.9.3/0.9.5)
+//-                  fontawesome(4.4.0), reactjs(0.14.0)
+- var use = { cdn: true, og: false, favicon: true }
+- var lib = { jquery: true, d3js: false, angular: true, bootstrap: true, semantic: false, fontawesome: true, reactjs: false }
+- var assets = "assets"
+- var favicon = "thumbnail.png"
+- var title = "template"
+- var og = {}
+- og.title = title
+- og.twitter = {type: "summary_large_image", site: "@zbryikt", creator: "@zbryikt"}
+- og.domain = "zbryikt.github.io"
+- og.url = ""
+- og.thumbnail = {width: 200, height: 200, type: "image/png"}
+- og.thumbnail.url = "thumbnail.png"
+- og.author = "zbryikt"
+- og.section = "Taiwan"
+- og.keyword = "zbryikt,template"
+- og.description = ""
+html(lang="en")
+  head(prefix="og: http://ogp.me/ns#")
+    meta(charset="utf-8")
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    title= title
+    // libraries
+    include library.jade
+    // custom files
+    link(rel="stylesheet",type="text/css",href="index.css")
+    link(rel="stylesheet",type="text/css",href="lib/clusterize.css")
+    script(src="lib/papaparse.min.js")
+    script(src="lib/xlsx.full.min.js")
+    script(src="lib/clusterize.min.js")
+    script(src="https://apis.google.com/js/api.js")
+  body
+    .loader
+    div(style="height:0") &nbsp;
+    #root
+      .row
+        .col-sm-8
+          .input-group
+            input.form-control#file(type="file")
+            span.input-group-btn
+              .btn.btn-default(onclick="loadfile()") load csv
+        .col-sm-4
+          .btn.btn-default(onclick="handle()") from Google Sheets
+          .btn.btn-default(onclick="tocsv()") download
+          a#download-link.btn.btn-default(download="out.csv",href="",style="display:none") download
+
+          #sheet-list
+      hr
+      input#input.form-control(type="text")
+      #sheet.sheet.clusterize
+        .sheet-head
+        .sheet-body.clusterize-scroll
+          .sheet-cells.clusterize-content
+
+      //-.table-out.clusterize
+        table#head
+        .table#scroller.clusterize-scroll
+          table
+            tbody#content.clusterize-content
+              tr.clusterize-no-data
+                td loading...
+
+  script(type="text/javascript",src="index.js")
+  script(type="text/javascript",src="sheet.js")
