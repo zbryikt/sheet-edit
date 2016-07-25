@@ -9,7 +9,9 @@ data = do
 
 tocsv = ->
   headers = data.headers
-  ret = data.rows.map((d) -> headers.map(-> "#{d[it]}").join(\,)).join(\\n)
+  rows = data.rows.filter((row)-> headers.map((h)-> row[h]).join("") )
+  headers = headers.filter((h)-> rows.map((row)->row[h]).join(""))
+  ret = rows.map((d) -> headers.map(-> "#{d[it]}").join(\,)).join(\\n)
   ret = "#{headers.map(->'"' + it + '"').join(\,)}\n#{ret}"
   url = URL.createObjectURL new Blob [ret], {type: \text/csv}
   link = document.getElementById \download-link
@@ -62,6 +64,28 @@ render = ->
       col = +n.getAttribute(\col)
       data.rows[row][data.headers[col]] = d = val
       document.getElementById(\input).value = d
+      re = /([A-Z]+[0-9]*)/g
+      if /^=/.exec(d) =>
+        grid = {}
+        while true
+          ret = re.exec(d)
+          if !ret => break
+          val = ret.1
+          str = /([A-Z]+)/.exec(val).1
+          num = /([0-9]+)/.exec(val).1
+          VR = +num - 1
+          VC = 0
+          for i from 0 til str.length
+            VC = VC * 26 + (str.charCodeAt(i) - 65)
+          grid[val] = data.rows[VR][data.headers[VC]]
+          if !isNaN(+grid[val]) => grid[val] = +grid[val]
+        d = d.replace(/([A-Z]+)/g, 'grid.$1')
+        d = d.replace(/^=/, '')
+        try
+          ret = eval(d)
+        catch err
+        data.rows[row][data.headers[col]] = d = ret
+        document.getElementById(\input).value = ret
     ), 0
 
 sheet = (ret) ->
@@ -86,6 +110,12 @@ csv = (buf) ->
       console.log "[CSV] #{data.rows.length} rows imported."
       render!
 
+empty = ->
+  data.headers = [i for i from 0 til 10]
+  data.rows = [JSON.parse("{#{[('"' + i + '": ""') for i from 0 til 10].join(\,)}}") for j from 0 til 100]
+  console.log data.rows
+  render!
+
 xls = (buf) ->
   is-loading true
   workbook = XLSX.read buf, {type: \binary}
@@ -107,3 +137,4 @@ loadfile = ->
     if /\.csv$/.exec name => csv buf
     if /\.xlsx?$/.exec name => xls buf
   fr.readAsBinaryString file.files.0
+empty!
